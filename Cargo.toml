@@ -1,0 +1,6 @@
+[package]
+name = "bench-insert"
+version = "0.1.0"
+authors = ["Thaddee Tyl <thaddee.tyl@gmail.com>"]
+
+[dependencies]
