@@ -2,6 +2,9 @@
 extern crate test;
 
 use std::collections::LinkedList;
+pub use self::tree_array::TreeArray;
+
+pub mod tree_array;
 
 fn list_insert(l: &mut LinkedList<i32>, position: usize, item: i32) {
     let mut tail = l.split_off(position);
@@ -61,5 +64,21 @@ mod tests {
             assert_eq!(*e, i);
             i += 1;
         }
+    }
+
+    #[test]
+    fn test_insert_tree_array() {
+        let mut t = TreeArray::new();
+        assert_eq!(t.len(), 0);
+        t.insert(0, 1);
+        t.insert(1, 2);
+        //assert_eq!(t.get(0), 1);
+        //assert_eq!(t.len(), 2);
+
+        //let mut i = 1;
+        //for e in &t {
+        //    assert_eq!(*e, i);
+        //    i += 1;
+        //}
     }
 }
