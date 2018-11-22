@@ -87,3 +87,93 @@ impl<V> TreeArray<V> {
         }
     }
 }
+
+// Modified from https://github.com/alexcrichton/splay-rs/blob/master/src/map.rs
+//
+/// Performs a top-down splay operation on a tree rooted at `node`. This will
+/// modify the pointer to contain the new root of the tree once the splay
+/// operation is done. When finished, if `index` is in the tree, it will be at the
+/// root. Otherwise the closest key to the specified key will be at the root.
+fn splay<V>(index: usize, node: &mut Box<Node<V>>) {
+    let mut newleft = None;
+    let mut newright = None;
+
+    // Eplicitly grab a new scope so the loans on newleft/newright are
+    // terminated before we move out of them.
+    {
+        // Yes, these are backwards, that's intentional.
+        let mut l = &mut newright;
+        let mut r = &mut newleft;
+        let node_idx = node.rel_index();
+
+        loop {
+            match index.cmp(&node_idx) {
+                // Found it, yay!
+                Equal => { break }
+
+                Less => {
+                    let mut left = match node.remove_left() {
+                        Some(left) => left, None => break
+                    };
+                    //               left.rel_index() (in LLL… substring)
+                    //            |  ↓  |
+                    // |----------LLLLLLLNRRRRRR-----|
+                    //      left_idx ⬏   ⬑ node_idx
+                    let left_idx = node_idx - 1 - match &left.right {
+                        Some(right) => right.size, None => 0
+                    };
+                    // Rotate this node right if necessary.
+                    if index.cmp(&left_idx) == Less {
+                        // A bit odd, but avoids drop glue
+                        mem::swap(&mut node.left, &mut left.right);
+                        mem::swap(&mut left, node);
+                        let none = mem::replace(&mut node.right, Some(left));
+                        match mem::replace(&mut node.left, none) {
+                            Some(l) => { left = l; }
+                            None    => { break }
+                        }
+                    }
+
+                    *r = Some(mem::replace(node, left));
+                    let tmp = r;
+                    r = &mut tmp.as_mut().unwrap().left;
+                }
+
+                // If you look closely, you may have seen some similar code
+                // before
+                Greater => {
+                    match node.remove_right() {
+                        None => { break }
+                        // rotate left if necessary
+                        Some(mut right) => {
+                            //              right.rel_index() (in RRR… substring)
+                            //                    |  ↓ |
+                            // |----------LLLLLLLNRRRRRR-----|
+                            //          node_idx ⬏   ⬑ right_idx
+                            let right_idx = node_idx + 1 + right.rel_index();
+                            if index.cmp(&right_idx) == Greater {
+                                mem::swap(&mut node.right, &mut right.left);
+                                mem::swap(&mut right, node);
+                                let none = mem::replace(&mut node.left,
+                                                         Some(right));
+                                match mem::replace(&mut node.right, none) {
+                                    Some(r) => { right = r; }
+                                    None    => { break }
+                                }
+                            }
+                            *l = Some(mem::replace(node, right));
+                            let tmp = l;
+                            l = &mut tmp.as_mut().unwrap().right;
+                        }
+                    }
+                }
+            }
+        }
+
+        mem::swap(l, &mut node.left);
+        mem::swap(r, &mut node.right);
+    }
+
+    node.left = newright;
+    node.right = newleft;
+}
