@@ -72,7 +72,10 @@ mod tests {
         assert_eq!(t.len(), 0);
         t.insert(0, 1);
         t.insert(1, 2);
-        //assert_eq!(t.get(0), 1);
+        match t.get(0) {
+            None => panic!("Failed to access item at index 0"),
+            Some(&v) => assert_eq!(v, 1),
+        }
         //assert_eq!(t.len(), 2);
 
         //let mut i = 1;
