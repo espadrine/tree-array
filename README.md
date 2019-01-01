@@ -13,3 +13,12 @@ name.)
 Use the nightly channel with `rustup default nightly`.
 
 Run the benchmark with `cargo bench`.
+
+## Development
+
+We recommend installing inotify-tools on Linux and running this to have the
+tests run on every file write:
+
+```bash
+while inotifywait -qe close_write --exclude '^\.git$' $(find . -type d); do cargo test; done
+```

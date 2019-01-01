@@ -76,7 +76,7 @@ mod tests {
             None => panic!("Failed to access item at index 0"),
             Some(&v) => assert_eq!(v, 1),
         }
-        //assert_eq!(t.len(), 2);
+        assert_eq!(t.len(), 2);
 
         //let mut i = 1;
         //for e in &t {
